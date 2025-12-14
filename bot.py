@@ -100,6 +100,15 @@ def format_response(data):
 
         return "\n".join(lines)
 
+    # Check for specific structure: success, count, links
+    if 'success' in data and 'count' in data and 'links' in data:
+        lines = []
+        if isinstance(data['links'], list):
+            lines.append("<b>Links:</b>")
+            for item in data['links']:
+                lines.append(f"- {html.escape(str(item))}")
+        return "\n".join(lines)
+
     # Generic Fallback for other APIs
     lines = []
     for key, value in data.items():
@@ -130,7 +139,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     welcome_text = (
         "Welcome to the Link Bypass Bot!\n\n"
-        "I can bypass links and details from various supported sites.\n\n"
+        "I can extract links and details from various supported sites and send them in a readable format.\n\n"
         "Available commands:\n"
         f"{commands_text}\n"
         "Usage: /command <url>"
