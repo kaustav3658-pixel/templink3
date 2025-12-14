@@ -3,6 +3,9 @@ import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 import json
+from flask import Flask
+from threading import Thread
+import os
 
 # Telegram Bot Token
 TOKEN = "8486043863:AAH8JiiRfD89_xJuQtLLGMpK4FIgk2LroVY"
@@ -119,7 +122,22 @@ async def handle_bypass(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logging.error(f"Error processing {cmd}: {e}")
         await update.message.reply_text(f"Error occurred: {str(e)}")
 
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return "Bot is running"
+
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
+
 if __name__ == '__main__':
+    # Start Flask in a separate thread
+    flask_thread = Thread(target=run_flask)
+    flask_thread.daemon = True
+    flask_thread.start()
+
     application = ApplicationBuilder().token(TOKEN).build()
     application.add_handler(CommandHandler('start', start))
     for cmd in API_MAP.keys():
