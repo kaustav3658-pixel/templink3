@@ -30,15 +30,56 @@ API_MAP = {
     'seed': 'https://pbx1botapi.vercel.app/api/hubdrive',
     'vcl': 'https://pbx1botapi.vercel.app/api/vcloud',
     'vega': 'https://pbx1botsapi2.vercel.app/api/vega',
+    'atv': 'https://appletv.pbx1bots.workers.dev/',
+    'prime': 'https://primevideo.pbx1bots.workers.dev/',
+    'airtel': 'https://airtelxstream.pbx1bots.workers.dev/',
+    'zee5': 'https://zee5.pbx1bots.workers.dev/',
+    'stage': 'https://stage.pbx1bots.workers.dev/',
+    'bms': 'https://bms.pbx1.workers.dev/',
+    'sun': 'https://sunnxt.pbx1.workers.dev/',
+}
+
+# Command Descriptions
+COMMAND_DESCRIPTIONS = {
+    'cdn': 'HubCDN',
+    'eflix': 'ExtraFlix',
+    'elink': 'ExtraLink',
+    'gd': 'DriveLeech',
+    'gdr': 'GDRex',
+    'ged': 'GDFlix',
+    'hb': 'HBLinks',
+    'hub': 'HubCloud',
+    'lux': 'LuxDrive',
+    'neo': 'Neo',
+    'nex': 'NexDrive',
+    'pcdn': 'PixelCDN',
+    'seed': 'HubDrive',
+    'vcl': 'VCloud',
+    'vega': 'Vega',
+    'atv': 'AppleTV Posters',
+    'prime': 'PrimeVideo Posters',
+    'airtel': 'AirtelXstream Posters',
+    'zee5': 'Zee5 Posters',
+    'stage': 'Stage Posters',
+    'bms': 'BookMyShow Posters',
+    'sun': 'SunNXT Posters',
 }
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Sends a welcome message with available commands."""
-    commands_list = "\n".join([f"/{cmd}" for cmd in sorted(API_MAP.keys())])
+    commands_text = ""
+    sorted_cmds = sorted(API_MAP.keys())
+
+    # Group commands? No, just list them with descriptions as requested.
+    for cmd in sorted_cmds:
+        description = COMMAND_DESCRIPTIONS.get(cmd, "Bypass Link")
+        commands_text += f"/{cmd} - {description}\n"
+
     welcome_text = (
         "Welcome to the Link Bypass Bot!\n\n"
+        "I can extract links and details from various supported sites and send them in JSON format.\n\n"
         "Available commands:\n"
-        f"{commands_list}\n\n"
+        f"{commands_text}\n"
         "Usage: /command <url>"
     )
     await update.message.reply_text(welcome_text)
