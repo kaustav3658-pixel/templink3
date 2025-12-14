@@ -130,7 +130,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     welcome_text = (
         "Welcome to the Link Bypass Bot!\n\n"
-        "I can extract links and details from various supported sites and send them in a readable format.\n\n"
+        "I can bypass links and details from various supported sites.\n\n"
         "Available commands:\n"
         f"{commands_text}\n"
         "Usage: /command <url>"
