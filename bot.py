@@ -3,6 +3,7 @@ import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 import json
+import html
 from flask import Flask
 from threading import Thread
 import os
@@ -68,6 +69,55 @@ COMMAND_DESCRIPTIONS = {
     'sun': 'SunNXT Posters',
 }
 
+def format_response(data):
+    """Formats the JSON response into a human-readable message."""
+    if not isinstance(data, dict):
+        return str(data)
+
+    # Check for specific structure: file_name, links (common in file hosters)
+    if 'file_name' in data and 'links' in data:
+        lines = []
+        if 'file_name' in data:
+            lines.append(f"<b>File Name:</b> <code>{html.escape(str(data['file_name']))}</code>")
+        if 'file_size' in data:
+             lines.append(f"<b>File Size:</b> <code>{html.escape(str(data['file_size']))}</code>")
+
+        lines.append("") # Spacer
+
+        if isinstance(data['links'], list):
+            lines.append("<b>Links:</b>")
+            for idx, link_item in enumerate(data['links'], 1):
+                if isinstance(link_item, dict):
+                    link_type = link_item.get('type', 'Link')
+                    link_url = link_item.get('url', 'No URL')
+                    lines.append(f"{idx}. <b>{html.escape(str(link_type))}:</b> {html.escape(str(link_url))}")
+                else:
+                    lines.append(f"{idx}. {html.escape(str(link_item))}")
+
+        if 'used_domain' in data:
+             lines.append("")
+             lines.append(f"<b>Used Domain:</b> {html.escape(str(data['used_domain']))}")
+
+        return "\n".join(lines)
+
+    # Generic Fallback for other APIs
+    lines = []
+    for key, value in data.items():
+        formatted_key = key.replace('_', ' ').title()
+        formatted_key = html.escape(formatted_key)
+        if isinstance(value, list):
+             lines.append(f"<b>{formatted_key}:</b>")
+             for item in value:
+                 lines.append(f"- {html.escape(str(item))}")
+        elif isinstance(value, dict):
+             lines.append(f"<b>{formatted_key}:</b>")
+             for k, v in value.items():
+                 lines.append(f"  - {html.escape(str(k))}: {html.escape(str(v))}")
+        else:
+             lines.append(f"<b>{formatted_key}:</b> {html.escape(str(value))}")
+
+    return "\n".join(lines)
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Sends a welcome message with available commands."""
     commands_text = ""
@@ -80,7 +130,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     welcome_text = (
         "Welcome to the Link Bypass Bot!\n\n"
-        "I can extract links and details from various supported sites and send them in JSON format.\n\n"
+        "I can extract links and details from various supported sites and send them in a readable format.\n\n"
         "Available commands:\n"
         f"{commands_text}\n"
         "Usage: /command <url>"
@@ -110,11 +160,14 @@ async def handle_bypass(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         try:
             data = response.json()
-            formatted_json = json.dumps(data, indent=2)
-            if len(formatted_json) > 4000:
-                formatted_json = formatted_json[:4000] + "..."
+            formatted_text = format_response(data)
 
-            await update.message.reply_text(f"```json\n{formatted_json}\n```", parse_mode='Markdown')
+            if len(formatted_text) > 4000:
+                formatted_text = formatted_text[:4000] + "..."
+                # If truncated, disable HTML parsing to avoid broken tags
+                await update.message.reply_text(formatted_text, disable_web_page_preview=True)
+            else:
+                await update.message.reply_text(formatted_text, parse_mode='HTML', disable_web_page_preview=True)
         except ValueError:
             await update.message.reply_text(response.text)
 
