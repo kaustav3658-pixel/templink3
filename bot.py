@@ -9,7 +9,7 @@ from threading import Thread
 import os
 
 # Telegram Bot Token
-TOKEN = "8486043863:AAH8JiiRfD89_xJuQtLLGMpK4FIgk2LroVY"
+TOKEN = "8559514633:AAHe19YVpgjbNgG9szsPxMZoRb27HfNbNF8"
 
 # Logging configuration
 logging.basicConfig(
